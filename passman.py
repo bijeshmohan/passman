@@ -16,7 +16,8 @@ def parse_args():
                         action='store_true',
                         help="show logs to the console")
     parser.add_argument('-d', '-db', '--database',
-                        help="path to database (.db) file")
+                        help="path to database (.db) file",
+                        required=True)
     parser.add_argument('--store',
                         action="store_true",
                         help="add credential to database")
@@ -27,8 +28,7 @@ def parse_args():
                         action="store_true",
                         help="lists the services (with other attributes) stored in the database")
     parser.add_argument('--service',
-                        help="name of the service",
-                        required=True)
+                        help="name of the service")
     parser.add_argument('--url',
                         help="url for the service")
     parser.add_argument('--userid',
@@ -70,6 +70,13 @@ def main():
         curs.execute("SELECT userid, passwd FROM credentials WHERE service = :service", {"service": args.service})
         res = curs.fetchone()
         print(f"userid: {res[0]}\npasswd: {res[1]}")
+    
+    if args.list:
+        curs.execute("SELECT service, url, userid FROM credentials")
+        # TODO: Prettify output formatting
+        print("service\turl\tuserid", '-'*30, sep="\n")
+        for r in curs.fetchall():
+            print(*r, sep="\t")
 
     conn.commit()
     conn.close()

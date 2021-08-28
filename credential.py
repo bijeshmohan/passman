@@ -1,5 +1,6 @@
 class Credential:
     """Class to store the credential of a service"""
+    # TODO: Use dataclass
     default_kwargs = {
         "userid": "",   # empty string or None?
         "url": "",      # empty string or None?

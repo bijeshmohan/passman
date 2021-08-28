@@ -15,7 +15,7 @@ def parse_args():
     parser.add_argument('-v', '--verbose',
                         action='store_true',
                         help="show logs to the console")
-    parser.add_argument('-d', '-db', '--database',
+    parser.add_argument('-db', '--database',
                         help="path to database (.db) file",
                         required=True)
     parser.add_argument('--store',

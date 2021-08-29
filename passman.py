@@ -11,34 +11,35 @@ logger = logging.getLogger("passman")
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description="Password Manager", allow_abbrev=False)
-    parser.add_argument('-v', '--verbose',
-                        action='store_true',
-                        help="show logs to the console")
-    parser.add_argument('-db', '--database',
-                        help="path to database (.db) file",
-                        required=True)
-    parser.add_argument('--store',
-                        action="store_true",
-                        help="add credential to database")
-    parser.add_argument('--fetch',
-                        action="store_true",
-                        help="retrieve credential from database")
-    parser.add_argument('--list',
-                        action="store_true",
-                        help="lists the services (with other attributes) stored in the database")
-    parser.add_argument('--service',
-                        help="name of the service")
-    parser.add_argument('--url',
-                        help="url for the service")
-    parser.add_argument('--userid',
-                        help="userid for the service")
-    parser.add_argument('--passwd',
-                        help="password for the service")
+    parser = argparse.ArgumentParser(description="Password Manager",
+                                     allow_abbrev=False)
+    parser.add_argument('-v', "--verbose", action="store_true",
+                        help="print info logs to the console")
+
+    parent_parser = argparse.ArgumentParser(add_help=False)
+    parent_parser.add_argument('--database', help="database (.db) file to store/fetch password from")
+
+    subparser = parser.add_subparsers(title='Commands', dest="action")
+
+    store_parser = subparser.add_parser('store', parents=[parent_parser],
+                                        help="store password")
+    store_parser.add_argument('--url', help="url for the service")
+    store_parser.add_argument('--userid', metavar='USERNAME | EMAIL | MOBILE',
+                              help='userid for the service')
+    store_parser.add_argument('service', metavar='SERVICE',
+                              help="name of the service to store password")
+    store_parser.add_argument('passwd', metavar='PASSWORD',
+                              help="password for the service")
+
+    fetch_parser = subparser.add_parser('fetch', parents=[parent_parser],
+                                        help="fetch password")
+    fetch_parser.add_argument('service', metavar='SERVICE',
+                              help="service name of the password to fetch")
     
-    args = parser.parse_args()
-    # TODO: Implement conditions
-    return args
+    list_parser = subparser.add_parser('list', parents=[parent_parser], 
+                                       help='list services')
+    
+    return parser.parse_args()
 
 
 def main():
@@ -51,7 +52,8 @@ def main():
     conn = sql.connect(args.database)
     curs = conn.cursor()
 
-    if args.store:
+    if args.action == 'store':
+        # Store password to the database
         try:
             curs.execute("INSERT INTO credentials VALUES (?, ?, ?, ?)",
                          (args.service, args.url, args.userid, args.passwd))
@@ -65,13 +67,11 @@ def main():
                          )""")
             curs.execute("INSERT INTO credentials VALUES (?, ?, ?, ?)",
                          (args.service, args.url, args.userid, args.passwd))
-
-    if args.fetch:
+    elif args.action == 'fetch':
         curs.execute("SELECT userid, passwd FROM credentials WHERE service = :service", {"service": args.service})
         res = curs.fetchone()
         print(f"userid: {res[0]}\npasswd: {res[1]}")
-    
-    if args.list:
+    elif args.action == 'list':
         curs.execute("SELECT service, url, userid FROM credentials")
         # TODO: Prettify output formatting
         print("service\turl\tuserid", '-'*30, sep="\n")

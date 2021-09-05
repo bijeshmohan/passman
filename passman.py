@@ -5,9 +5,6 @@ import logging
 import sqlite3 as sql
 import sys
 
-from connector import Connector
-from credential import Credential
-
 
 logger = logging.getLogger("passman")
 

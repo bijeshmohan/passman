@@ -120,7 +120,14 @@ def main():
         res = curs.fetchone()
         print(f"userid: {res[0]}\npasswd: {res[1]}")
     elif args.action == "list":
-        cols = ["service", "url"]
+        cols = ["service"]
+
+        if args.url:
+            cols.append('url')
+
+        if args.userid:
+            cols.append('userid')
+
         curs.execute(f"SELECT {', '.join(cols)} FROM credentials")
         res = curs.fetchall()
         output = tabulate(res, title=cols)
